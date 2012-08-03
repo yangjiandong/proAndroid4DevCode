@@ -1,0 +1,8 @@
+bin
+gen
+*.class
+.svn
+target
+*.jar
+
+/.DS_Store
