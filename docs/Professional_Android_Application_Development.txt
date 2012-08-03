@@ -1,0 +1,57 @@
+2012.08.03
+----------
+
+   1. Professional Android 4 Application Development
+   p51
+   p65
+   
+2012.08.02
+----------
+
+   1. listening the sms
+   p319
+   
+2012.08.01
+----------
+
+   1. dynamically updating menu items
+   p128
+   
+   2. Intent
+   startActivity -- 直接启动activity,不带参数
+   startActivityForResult 
+   
+   注意,在android中,所有activity都在堆栈中,最新激活的在顶端,只有finish才会把它从stack中删除
+   一般操作时,回退键取出上一个activity
+   
+   3. 直接调用系统activity,打电话例子
+   p139
+   
+   4. Link type
+   p140
+   
+   5. intent filter
+   p144
+   
+   6. Broadcasting events with intents
+   p156
+   --接受系统信息,可接受短信信息??
+   系统自带Broadcast actions
+   p159
+   
+   7. p182
+   
+   8. p232 google map
+   
+   9 working in the background
+   p273
+   
+2012.07.31
+----------
+
+   1. p51
+   
+   2. 直接取资源
+   p84
+   
+   

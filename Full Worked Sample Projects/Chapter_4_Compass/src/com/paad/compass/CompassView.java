@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 
 public class CompassView extends View {
-  
+
   private float bearing;
 
   public void setBearing(float _bearing) {
@@ -29,7 +29,7 @@ public class CompassView extends View {
   private String southString;
   private String westString;
   private int textHeight;
-  
+
   public CompassView(Context context) {
     super(context);
     initCompassView();
@@ -40,16 +40,14 @@ public class CompassView extends View {
     initCompassView();
   }
 
-  public CompassView(Context context,
-                     AttributeSet ats,
-                     int defaultStyle) {
+  public CompassView(Context context, AttributeSet ats, int defaultStyle) {
     super(context, ats, defaultStyle);
     initCompassView();
   }
 
   protected void initCompassView() {
     setFocusable(true);
-    
+
     Resources r = this.getResources();
 
     circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -65,12 +63,12 @@ public class CompassView extends View {
     textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     textPaint.setColor(r.getColor(R.color.text_color));
 
-    textHeight = (int)textPaint.measureText("yY");
+    textHeight = (int) textPaint.measureText("yY");
 
     markerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     markerPaint.setColor(r.getColor(R.color.marker_color));
   }
-  
+
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     // The compass is a circle that fills as much space as possible.
@@ -101,14 +99,14 @@ public class CompassView extends View {
     }
     return result;
   }
-  
+
   @Override
   protected void onDraw(Canvas canvas) {
     int mMeasuredWidth = getMeasuredWidth();
     int mMeasuredHeight = getMeasuredHeight();
 
     int px = mMeasuredWidth / 2;
-    int py = mMeasuredHeight / 2 ;
+    int py = mMeasuredHeight / 2;
 
     int radius = Math.min(px, py);
 
@@ -120,14 +118,14 @@ public class CompassView extends View {
     canvas.save();
     canvas.rotate(-bearing, px, py);
 
-    int textWidth = (int)textPaint.measureText("W");
-    int cardinalX = px-textWidth/2;
-    int cardinalY = py-radius+textHeight;
+    int textWidth = (int) textPaint.measureText("W");
+    int cardinalX = px - textWidth / 2;
+    int cardinalY = py - radius + textHeight;
 
     // Draw the marker every 15 degrees and text every 45.
     for (int i = 0; i < 24; i++) {
       // Draw a marker.
-      canvas.drawLine(px, py-radius, px, py-radius+10, markerPaint);
+      canvas.drawLine(px, py - radius, px, py - radius + 10, markerPaint);
 
       canvas.save();
       canvas.translate(0, textHeight);
@@ -136,29 +134,33 @@ public class CompassView extends View {
       if (i % 6 == 0) {
         String dirString = "";
         switch (i) {
-          case(0)  : {
-                       dirString = northString;
-                       int arrowY = 2*textHeight;
-                       canvas.drawLine(px, arrowY, px-5, 3*textHeight,
-                                       markerPaint);
-                       canvas.drawLine(px, arrowY, px+5, 3*textHeight,
-                                       markerPaint);
-                       break;
-                     }
-          case(6)  : dirString = eastString; break;
-          case(12) : dirString = southString; break;
-          case(18) : dirString = westString; break;
+        case (0): {
+          dirString = northString;
+          int arrowY = 2 * textHeight;
+          canvas.drawLine(px, arrowY, px - 5, 3 * textHeight, markerPaint);
+          canvas.drawLine(px, arrowY, px + 5, 3 * textHeight, markerPaint);
+          break;
+        }
+        case (6):
+          dirString = eastString;
+          break;
+        case (12):
+          dirString = southString;
+          break;
+        case (18):
+          dirString = westString;
+          break;
         }
         canvas.drawText(dirString, cardinalX, cardinalY, textPaint);
       }
 
       else if (i % 3 == 0) {
         // Draw the text every alternate 45deg
-        String angle = String.valueOf(i*15);
+        String angle = String.valueOf(i * 15);
         float angleTextWidth = textPaint.measureText(angle);
 
-        int angleTextX = (int)(px-angleTextWidth/2);
-        int angleTextY = py-radius+textHeight;
+        int angleTextX = (int) (px - angleTextWidth / 2);
+        int angleTextY = py - radius + textHeight;
         canvas.drawText(angle, angleTextX, angleTextY, textPaint);
       }
       canvas.restore();
@@ -167,19 +169,20 @@ public class CompassView extends View {
     }
     canvas.restore();
   }
-  
+
   @Override
-  public boolean dispatchPopulateAccessibilityEvent(final AccessibilityEvent event) {
+  public boolean dispatchPopulateAccessibilityEvent(
+      final AccessibilityEvent event) {
     super.dispatchPopulateAccessibilityEvent(event);
     if (isShown()) {
       String bearingStr = String.valueOf(bearing);
       if (bearingStr.length() > AccessibilityEvent.MAX_TEXT_LENGTH)
-        bearingStr = bearingStr.substring(0, AccessibilityEvent.MAX_TEXT_LENGTH);
-      
+        bearingStr = bearingStr
+            .substring(0, AccessibilityEvent.MAX_TEXT_LENGTH);
+
       event.getText().add(bearingStr);
       return true;
-    }
-    else
+    } else
       return false;
   }
 }
