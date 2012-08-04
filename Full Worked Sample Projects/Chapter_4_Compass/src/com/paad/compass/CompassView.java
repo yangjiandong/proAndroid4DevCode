@@ -113,7 +113,7 @@ public class CompassView extends View {
     // Draw the background
     canvas.drawCircle(px, py, radius, circlePaint);
 
-    // Rotate our perspective so that the Ôtop' is
+    // Rotate our perspective so that the ï¿½top' is
     // facing the current bearing.
     canvas.save();
     canvas.rotate(-bearing, px, py);
