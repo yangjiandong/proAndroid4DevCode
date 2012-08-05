@@ -33,6 +33,20 @@
    2. 2nd
    第5章
    
+   16:15 - 17:13
+   
+   p181
+   finding and using the launch intent within an activity
+   onCreate(){
+   Intent intent = getIntent();
+   String action = intent.getAction();
+   Uri data = intent.getData();
+   
+   p210
+   自定义弹出对话框
+   
+   17:18 - 17:55
+   完成第9章代码
    
 2012.08.04
 ----------
