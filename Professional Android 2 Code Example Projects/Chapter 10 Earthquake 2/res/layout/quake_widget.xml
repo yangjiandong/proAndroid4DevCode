@@ -1,0 +1,22 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+  android:orientation="horizontal" 
+  android:layout_width="fill_parent" 
+  android:layout_height="fill_parent" 
+  android:background="#F111" 
+  android:padding="5sp"> 
+  <TextView 
+    android:id="@+id/widget_magnitude" 
+    android:layout_width="wrap_content"
+    android:layout_height="fill_parent" 
+    android:textSize="24sp" 
+    android:padding="3dp" 
+  /> 
+  <TextView 
+    android:id="@+id/widget_details" 
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent" 
+    android:textSize="14sp" 
+    android:padding="3dp" 
+  /> 
+</LinearLayout> 
+    

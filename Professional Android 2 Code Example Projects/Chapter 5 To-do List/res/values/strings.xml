@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="hello">Hello World, TodoList!</string>
+  <string name="app_name">Chapter 5 To-do List</string>
+  <string name="add_new">Add New Item</string>
+  <string name="remove">Remove Item</string>
+  <string name="cancel">Cancel</string>
+</resources>
