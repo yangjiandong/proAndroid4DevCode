@@ -7,12 +7,12 @@ import android.os.Bundle;
 
 public class MyActivity extends Activity {
   /**
-   * Listing 5-12: Registering and unregistering a Broadcast Receiver in code 
+   * Listing 5-12: Registering and unregistering a Broadcast Receiver in code
    */
-  private IntentFilter filter = 
+  private IntentFilter filter =
       new IntentFilter(LifeformDetectedReceiver.NEW_LIFEFORM);
 
-  private LifeformDetectedReceiver receiver = 
+  private LifeformDetectedReceiver receiver =
     new LifeformDetectedReceiver();
 
   @Override
@@ -20,18 +20,19 @@ public class MyActivity extends Activity {
     super.onResume();
 
     // Register the broadcast receiver.
-    registerReceiver(receiver, filter); 
+    registerReceiver(receiver, filter);
   }
 
   @Override
   public synchronized void onPause() {
     // Unregister the receiver
-    unregisterReceiver(receiver);  
+    unregisterReceiver(receiver);
 
     super.onPause();
   }
-  
+
   //
+  @SuppressWarnings("unused")
   private void detectedLifeform(String detectedLifeform, double currentLongitude, double currentLatitude) {
     Intent intent = new Intent(LifeformDetectedReceiver.NEW_LIFEFORM);
     intent.putExtra(LifeformDetectedReceiver.EXTRA_LIFEFORM_NAME,
@@ -43,9 +44,9 @@ public class MyActivity extends Activity {
 
     sendBroadcast(intent);
   }
-  
+
   //
-  
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
