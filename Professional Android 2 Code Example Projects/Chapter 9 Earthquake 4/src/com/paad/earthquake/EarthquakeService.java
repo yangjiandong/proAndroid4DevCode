@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -44,9 +45,9 @@ public class EarthquakeService extends Service {
 
   private Notification newEarthquakeNotification;
   public static final int NOTIFICATION_ID = 1;
-  
+
   private EarthquakeLookupTask lastLookup = null;
-  
+
   AlarmManager alarms;
   PendingIntent alarmIntent;
 
@@ -58,14 +59,23 @@ public class EarthquakeService extends Service {
 
     newEarthquakeNotification = new Notification(icon, tickerText, when);
 
+    // customer notification
+    //newEarthquakeNotification.flags=newEarthquakeNotification.flags|Notification.FLAG_ONGOING_EVENT;
+    //newEarthquakeNotification.contentView= new RemoteViews(this.getPackageName(),
+    //R.layout.notification);
+    //Intent intent=new Intent(this,MyActivity.class);
+    //PendingIntent.getActivity(this,0,intent,0);
+    //newEarthquakeNotification.contentIntent=pendingIntent;
+
     alarms = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
 
     String ALARM_ACTION;
-    ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM; 
+    ALARM_ACTION = EarthquakeAlarmReceiver.ACTION_REFRESH_EARTHQUAKE_ALARM;
     Intent intentToFire = new Intent(ALARM_ACTION);
     alarmIntent = PendingIntent.getBroadcast(this, 0, intentToFire, 0);
   }
 
+  //后台任务
   private class EarthquakeLookupTask extends AsyncTask<Void, Quake, Void> {
     @Override
     protected Void doInBackground(Void... params) {
@@ -74,23 +84,23 @@ public class EarthquakeService extends Service {
       try {
         String quakeFeed = getString(R.string.quake_feed);
         url = new URL(quakeFeed);
-    	         
+
         URLConnection connection;
         connection = url.openConnection();
-    	       
-        HttpURLConnection httpConnection = (HttpURLConnection)connection; 
-        int responseCode = httpConnection.getResponseCode(); 
 
-        if (responseCode == HttpURLConnection.HTTP_OK) { 
-          InputStream in = httpConnection.getInputStream(); 
-    	          
+        HttpURLConnection httpConnection = (HttpURLConnection)connection;
+        int responseCode = httpConnection.getResponseCode();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+          InputStream in = httpConnection.getInputStream();
+
           DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
           DocumentBuilder db = dbf.newDocumentBuilder();
 
           // Parse the earthquake feed.
-          Document dom = db.parse(in);      
+          Document dom = db.parse(in);
           Element docEle = dom.getDocumentElement();
-    	        	      
+
           // Get a list of each earthquake entry.
           NodeList nl = docEle.getElementsByTagName("entry");
           if (nl != null && nl.getLength() > 0) {
@@ -106,10 +116,10 @@ public class EarthquakeService extends Service {
               String linkString = hostname + link.getAttribute("href");
 
               String point = g.getFirstChild().getNodeValue();
-              String dt = when.getFirstChild().getNodeValue();  
+              String dt = when.getFirstChild().getNodeValue();
               SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
               Date qdate = new GregorianCalendar(0,0,0).getTime();
-              try {  
+              try {
                 qdate = sdf.parse(dt);
               } catch (ParseException e) {
                 e.printStackTrace();
@@ -123,9 +133,9 @@ public class EarthquakeService extends Service {
               String magnitudeString = details.split(" ")[1];
               int end =  magnitudeString.length()-1;
               double magnitude = Double.parseDouble(magnitudeString.substring(0, end));
-    	              
+
               details = details.split(",")[1].trim();
-    	             
+
               Quake quake = new Quake(qdate, details, l, magnitude, linkString);
 
               // Process a newly found earthquake
@@ -145,7 +155,7 @@ public class EarthquakeService extends Service {
       }
       finally {
       }
-      return null;  
+      return null;
     }
 
     @Override
@@ -160,11 +170,11 @@ public class EarthquakeService extends Service {
                              values[0].getDetails();
       Intent startActivityIntent = new Intent(EarthquakeService.this,
                                               Earthquake.class);
-      PendingIntent launchIntent = PendingIntent.getActivity(context,0, 
+      PendingIntent launchIntent = PendingIntent.getActivity(context,0,
                                                              startActivityIntent, 0);
 
-      newEarthquakeNotification.setLatestEventInfo(context, 
-                                                   expandedTitle, 
+      newEarthquakeNotification.setLatestEventInfo(context,
+                                                   expandedTitle,
                                                    expandedText,
                                                    launchIntent);
       newEarthquakeNotification.when = java.lang.System.currentTimeMillis();
@@ -175,13 +185,13 @@ public class EarthquakeService extends Service {
     }
 
     @Override
-    protected void onPostExecute(Void result) { 
+    protected void onPostExecute(Void result) {
       stopSelf();
     }
   }
-  
+
   @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {    
+  public int onStartCommand(Intent intent, int flags, int startId) {
     // Retrieve the shared preferences
     Context context = getApplicationContext();
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -194,7 +204,7 @@ public class EarthquakeService extends Service {
     if (freqIndex < 0)
       freqIndex = 0;
 
-    boolean autoUpdate = 
+    boolean autoUpdate =
       prefs.getBoolean(Preferences.PREF_AUTO_UPDATE, false);
 
     Resources r = getResources();
@@ -204,10 +214,10 @@ public class EarthquakeService extends Service {
 
     if (autoUpdate) {
       int alarmType = AlarmManager.ELAPSED_REALTIME_WAKEUP;
-      long timeToRefresh = SystemClock.elapsedRealtime() + 
+      long timeToRefresh = SystemClock.elapsedRealtime() +
                            updateFreq*60*1000;
-      alarms.setRepeating(alarmType, timeToRefresh, 
-                          updateFreq*60*1000, alarmIntent);  
+      alarms.setRepeating(alarmType, timeToRefresh,
+                          updateFreq*60*1000, alarmIntent);
     }
     else
       alarms.cancel(alarmIntent);
@@ -216,21 +226,21 @@ public class EarthquakeService extends Service {
 
     return Service.START_NOT_STICKY;
   };
-	
+
   @Override
   public IBinder onBind(Intent intent) {
     return null;
   }
-  
+
   private void addNewQuake(Quake _quake) {
     ContentResolver cr = getContentResolver();
-    // Construct a where clause to make sure we don�t already have this 
+    // Construct a where clause to make sure we don�t already have this
     // earthquake in the provider.
     String w = EarthquakeProvider.KEY_DATE + " = " + _quake.getDate().getTime();
 
     // If the earthquake is new, insert it into the provider.
     if (cr.query(EarthquakeProvider.CONTENT_URI, null, w, null, null).getCount()==0){
-      ContentValues values = new ContentValues();    
+      ContentValues values = new ContentValues();
 
       values.put(EarthquakeProvider.KEY_DATE, _quake.getDate().getTime());
       values.put(EarthquakeProvider.KEY_DETAILS, _quake.getDetails());
@@ -246,7 +256,7 @@ public class EarthquakeService extends Service {
       announceNewQuake(_quake);
     }
   }
-  
+
   private void announceNewQuake(Quake quake) {
     Intent intent = new Intent(NEW_EARTHQUAKE_FOUND);
     intent.putExtra("date", quake.getDate().getTime());
@@ -259,7 +269,7 @@ public class EarthquakeService extends Service {
   }
 
   private void refreshEarthquakes() {
-    if (lastLookup == null || 
+    if (lastLookup == null ||
         lastLookup.getStatus().equals(AsyncTask.Status.FINISHED)) {
       lastLookup = new EarthquakeLookupTask();
       lastLookup.execute((Void[])null);

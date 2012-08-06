@@ -1,3 +1,16 @@
+2012.08.06
+----------
+
+   1. p319
+   15:22 - 16:30
+   
+   Create Notification and configuring the status bar icon
+   p344
+   configuring the extended status notification display
+   p345
+   chapter 9  Earthquake4/res/notification.xml,
+   EarthquakeService p62
+   
 2012.08.05
 ----------
 

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
+//后台表
 public class EarthquakeProvider extends ContentProvider {
 
   public static final Uri CONTENT_URI = Uri.parse("content://com.paad.provider.earthquake/earthquakes");
