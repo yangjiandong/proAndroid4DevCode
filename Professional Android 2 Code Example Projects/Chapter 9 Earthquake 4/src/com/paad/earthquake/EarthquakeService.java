@@ -224,6 +224,7 @@ public class EarthquakeService extends Service {
 
     refreshEarthquakes();
 
+    //START_STICKY tells the OS to recreate the service after it has enough memory and call onStartCommand() again with a null intent. START_NOT_STICKY tells the OS to not bother recreating the service again. There is also a third code START_REDELIVER_INTENT that tells the OS to recreate the service AND redelivery the same intent to onStartCommand().
     return Service.START_NOT_STICKY;
   };
 
