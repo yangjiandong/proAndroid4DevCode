@@ -6,8 +6,18 @@
       
       16:24 - 17:12
    p361
-   widget 没有添加到桌面
+   widget 没有添加到桌面,模拟器能看到效果
    p397
+   
+      19:40 - 20:17
+   p438
+   Listening for incoming sms messages
+   permission:"android.permission.RECEIVE_SMS"
+   
+   p459,第13章 bluetooth,network,wifi
+      
+      20:21 - 20:42
+   p461
    
 2012.08.06
 ----------

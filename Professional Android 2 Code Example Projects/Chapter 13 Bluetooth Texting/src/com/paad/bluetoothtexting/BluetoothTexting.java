@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -23,22 +24,22 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class BluetoothTexting extends Activity {
-  
+
   private static int DISCOVERY_REQUEST = 1;
-  
+
   private Handler handler = new Handler();
-  private ArrayList<BluetoothDevice> foundDevices;
-  private ArrayAdapter<BluetoothDevice> aa; 
+  private ArrayList<BluetoothDevice> foundDevices = new ArrayList<BluetoothDevice>();
+  private ArrayAdapter<BluetoothDevice> aa;
   private ListView list;
-  
+
   private BluetoothAdapter bluetooth;
   private BluetoothSocket socket;
   private UUID uuid = UUID.fromString("a60f35f0-b93a-11de-8a39-08002009c666");
@@ -47,12 +48,12 @@ public class BluetoothTexting extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    
+
     // Get the Bluetooth Adapter
     configureBluetooth();
 
     // Setup the ListView of discovered devices
-    setupListView();    
+    setupListView();
 
     // Setup search button
     setupSearchButton();
@@ -64,13 +65,13 @@ public class BluetoothTexting extends Activity {
   private void configureBluetooth() {
     bluetooth = BluetoothAdapter.getDefaultAdapter();
   }
-  
+
   private void setupListenButton() {
-    Button listenButton = (Button)findViewById(R.id.button_listen);
+    Button listenButton = (Button) findViewById(R.id.button_listen);
     listenButton.setOnClickListener(new OnClickListener() {
       public void onClick(View view) {
         Intent disc = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        startActivityForResult(disc, DISCOVERY_REQUEST);     
+        startActivityForResult(disc, DISCOVERY_REQUEST);
       }
     });
   }
@@ -82,19 +83,18 @@ public class BluetoothTexting extends Activity {
       if (isDiscoverable) {
         String name = "bluetoothserver";
         try {
-          final BluetoothServerSocket btserver = 
-            bluetooth.listenUsingRfcommWithServiceRecord(name, uuid);
+          final BluetoothServerSocket btserver = bluetooth
+              .listenUsingRfcommWithServiceRecord(name, uuid);
 
-          AsyncTask<Integer, Void, BluetoothSocket> acceptThread = 
-            new AsyncTask<Integer, Void, BluetoothSocket>() {
+          AsyncTask<Integer, Void, BluetoothSocket> acceptThread = new AsyncTask<Integer, Void, BluetoothSocket>() {
 
             @Override
             protected BluetoothSocket doInBackground(Integer... params) {
               try {
-                socket = btserver.accept(params[0]*1000);
+                socket = btserver.accept(params[0] * 1000);
                 return socket;
               } catch (IOException e) {
-                Log.d("BLUETOOTH", e.getMessage());            
+                Log.d("BLUETOOTH", e.getMessage());
               }
               return null;
             }
@@ -103,57 +103,59 @@ public class BluetoothTexting extends Activity {
             protected void onPostExecute(BluetoothSocket result) {
               if (result != null)
                 switchUI();
-            }            
-          };          
+            }
+          };
           acceptThread.execute(resultCode);
         } catch (IOException e) {
-          Log.d("BLUETOOTH", e.getMessage());            
+          Log.d("BLUETOOTH", e.getMessage());
         }
       }
     }
   }
-  
+
   private void setupListView() {
-    aa = new ArrayAdapter<BluetoothDevice>(this, 
-               android.R.layout.simple_list_item_1,
-               foundDevices);
-    list = (ListView)findViewById(R.id.list_discovered);    
-    list.setAdapter(aa);
+    aa = new ArrayAdapter<BluetoothDevice>(this,
+        android.R.layout.simple_list_item_1, foundDevices);
+    list = (ListView) findViewById(R.id.list_discovered);
+    try {
+      list.setAdapter(aa);
+    } catch (Exception e) {
+      Log.e("", e.getMessage());
+    }
 
     list.setOnItemClickListener(new OnItemClickListener() {
-      public void onItemClick(AdapterView<?> arg0, View view, 
-                              int index, long arg3) {
-        AsyncTask<Integer, Void, Void> connectTask = 
-          new AsyncTask<Integer, Void, Void>() { 
-            @Override
-            protected Void doInBackground(Integer... params) {
-              try {
-                BluetoothDevice device = foundDevices.get(params[0]);
-                socket = device.createRfcommSocketToServiceRecord(uuid);
-                socket.connect();              
-              } catch (IOException e) {
-                Log.d("BLUETOOTH_CLIENT", e.getMessage());
-              }
-              return null;
+      public void onItemClick(AdapterView<?> arg0, View view, int index,
+          long arg3) {
+        AsyncTask<Integer, Void, Void> connectTask = new AsyncTask<Integer, Void, Void>() {
+          @Override
+          protected Void doInBackground(Integer... params) {
+            try {
+              BluetoothDevice device = foundDevices.get(params[0]);
+              socket = device.createRfcommSocketToServiceRecord(uuid);
+              socket.connect();
+            } catch (IOException e) {
+              Log.d("BLUETOOTH_CLIENT", e.getMessage());
             }
+            return null;
+          }
 
-            @Override
-            protected void onPostExecute(Void result) {
-              switchUI();
-            }
-          };
+          @Override
+          protected void onPostExecute(Void result) {
+            switchUI();
+          }
+        };
         connectTask.execute(index);
-      }      
+      }
     });
   }
-  
+
   private void setupSearchButton() {
-    Button searchButton = (Button)findViewById(R.id.button_search);
+    Button searchButton = (Button) findViewById(R.id.button_search);
 
     searchButton.setOnClickListener(new OnClickListener() {
       public void onClick(View view) {
-        registerReceiver(discoveryResult, 
-                         new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        registerReceiver(discoveryResult, new IntentFilter(
+            BluetoothDevice.ACTION_FOUND));
 
         if (!bluetooth.isDiscovering()) {
           foundDevices.clear();
@@ -162,31 +164,32 @@ public class BluetoothTexting extends Activity {
       }
     });
   }
-  
-  private void switchUI() {    
-    final TextView messageText = (TextView)findViewById(R.id.text_messages);
-    final EditText textEntry = (EditText)findViewById(R.id.text_message);
-	    
+
+  private void switchUI() {
+    final TextView messageText = (TextView) findViewById(R.id.text_messages);
+    final EditText textEntry = (EditText) findViewById(R.id.text_message);
+
     messageText.setVisibility(View.VISIBLE);
     list.setVisibility(View.GONE);
     textEntry.setEnabled(true);
-	    
+
     textEntry.setOnKeyListener(new OnKeyListener() {
       public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-        if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN) &&
-            (keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+        if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN)
+            && (keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
           sendMessage(socket, textEntry.getText().toString());
           textEntry.setText("");
           return true;
         }
         return false;
-      }      
+      }
     });
-    BluetoothSocketListener bsl = new BluetoothSocketListener(socket, handler, messageText);
+    BluetoothSocketListener bsl = new BluetoothSocketListener(socket, handler,
+        messageText);
     Thread messageListener = new Thread(bsl);
     messageListener.start();
   }
-	 
+
   private void sendMessage(BluetoothSocket socket, String msg) {
     OutputStream outStream;
     try {
@@ -196,51 +199,51 @@ public class BluetoothTexting extends Activity {
       outStream.write(byteString);
     } catch (IOException e) {
       Log.d("BLUETOOTH_COMMS", e.getMessage());
-    }    
+    }
   }
-  
+
   BroadcastReceiver discoveryResult = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
       BluetoothDevice remoteDevice;
       remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-      if (bluetooth.getBondedDevices().contains(remoteDevice)) {  
+      if (bluetooth.getBondedDevices().contains(remoteDevice)) {
         foundDevices.add(remoteDevice);
         aa.notifyDataSetChanged();
       }
     }
   };
-  
+
   private class MessagePoster implements Runnable {
     private TextView textView;
     private String message;
-	    
+
     public MessagePoster(TextView textView, String message) {
       this.textView = textView;
       this.message = message;
     }
-	    
+
     public void run() {
       textView.setText(message);
-    }     
+    }
   }
-  
+
   private class BluetoothSocketListener implements Runnable {
-	    
-	  private BluetoothSocket socket;
-	  private TextView textView;
-	  private Handler handler;
-	  
-	  public BluetoothSocketListener(BluetoothSocket socket, 
-	                                 Handler handler, TextView textView) {
-	    this.socket = socket;
-	    this.textView = textView;
-	    this.handler = handler;
-	  }
-	  
+
+    private BluetoothSocket socket;
+    private TextView textView;
+    private Handler handler;
+
+    public BluetoothSocketListener(BluetoothSocket socket, Handler handler,
+        TextView textView) {
+      this.socket = socket;
+      this.textView = textView;
+      this.handler = handler;
+    }
+
     public void run() {
       int bufferSize = 1024;
-      byte[] buffer = new byte[bufferSize];      
+      byte[] buffer = new byte[bufferSize];
       try {
         InputStream instream = socket.getInputStream();
         int bytesRead = -1;
@@ -249,19 +252,19 @@ public class BluetoothTexting extends Activity {
           message = "";
           bytesRead = instream.read(buffer);
           if (bytesRead != -1) {
-            while ((bytesRead==bufferSize)&&(buffer[bufferSize-1] != 0)) {
+            while ((bytesRead == bufferSize) && (buffer[bufferSize - 1] != 0)) {
               message = message + new String(buffer, 0, bytesRead);
               bytesRead = instream.read(buffer);
             }
-            message = message + new String(buffer, 0, bytesRead - 1); 
-	                  
-            handler.post(new MessagePoster(textView, message));              
+            message = message + new String(buffer, 0, bytesRead - 1);
+
+            handler.post(new MessagePoster(textView, message));
             socket.getInputStream();
           }
         }
       } catch (IOException e) {
         Log.d("BLUETOOTH_COMMS", e.getMessage());
-      } 
+      }
     }
   }
 }
