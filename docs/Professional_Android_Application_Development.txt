@@ -1,3 +1,24 @@
+2012.08.09
+----------
+
+   1. bluetooth
+   第13章
+   
+   2. sensor
+   第14章
+   感应仪
+   加速度传感器（accelerometer），
+   陀螺仪(gyroscope)，
+   环境光照传感器(light)，
+   磁力传感器(magnetic field)，
+   方向传感器(orientation)，
+   压力传感器(pressure)，距离传感器(proximity)和温度传感器(temperature)。
+   
+   compass 增加显示感应仪
+   --测试设备没有磁力感应器
+   
+   --总算粗粗看完
+   
 2012.08.08
 ----------
 

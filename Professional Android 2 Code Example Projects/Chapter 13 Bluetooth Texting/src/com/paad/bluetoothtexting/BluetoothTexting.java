@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -30,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class BluetoothTexting extends Activity {
 
@@ -43,6 +45,12 @@ public class BluetoothTexting extends Activity {
   private BluetoothAdapter bluetooth;
   private BluetoothSocket socket;
   private UUID uuid = UUID.fromString("a60f35f0-b93a-11de-8a39-08002009c666");
+
+  //
+  //閰嶅
+  BluetoothDevice demo_remoteDevice;
+  Set<BluetoothDevice> bondedDevices;
+  String remoteDeviceAddress = "";//demo
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +72,28 @@ public class BluetoothTexting extends Activity {
 
   private void configureBluetooth() {
     bluetooth = BluetoothAdapter.getDefaultAdapter();
+    String toastText;
+    if (bluetooth.isEnabled()) {
+      toastText = bluetooth.getName() + " : " + bluetooth.getAddress();
+    } else {
+      toastText = "No bluetooth";
+      // 鐩戞祴鐘舵�
+      String actionStateChanged = BluetoothAdapter.ACTION_STATE_CHANGED;
+      String actionRequestEnable = BluetoothAdapter.ACTION_REQUEST_ENABLE;
+      registerReceiver(bluetoothState, new IntentFilter(actionStateChanged));
+      startActivityForResult(new Intent(actionRequestEnable), 0);
+    }
+
+    Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
+
+    // 鎼滅储钃濈墮鐨勭瓑寰呰繃绋�    registerReceiver(discoveryMonitor, new IntentFilter(dStarted));
+    registerReceiver(discoveryMonitor, new IntentFilter(dFinished));
+
+    // 鎼滅储钃濈墮鍚庣殑缁撴灉
+    registerReceiver(discoveryResult2, new IntentFilter(
+        BluetoothDevice.ACTION_FOUND));
+    if (!bluetooth.isDiscovering())
+      bluetooth.startDiscovery();
   }
 
   private void setupListenButton() {
@@ -81,6 +111,7 @@ public class BluetoothTexting extends Activity {
     if (requestCode == DISCOVERY_REQUEST) {
       boolean isDiscoverable = resultCode > 0;
       if (isDiscoverable) {
+        list.setVisibility(View.VISIBLE);
         String name = "bluetoothserver";
         try {
           final BluetoothServerSocket btserver = bluetooth
@@ -126,6 +157,9 @@ public class BluetoothTexting extends Activity {
     list.setOnItemClickListener(new OnItemClickListener() {
       public void onItemClick(AdapterView<?> arg0, View view, int index,
           long arg3) {
+
+        Toast.makeText(BluetoothTexting.this, foundDevices.get(index).getName(), Toast.LENGTH_SHORT).show();
+
         AsyncTask<Integer, Void, Void> connectTask = new AsyncTask<Integer, Void, Void>() {
           @Override
           protected Void doInBackground(Integer... params) {
@@ -138,6 +172,7 @@ public class BluetoothTexting extends Activity {
             }
             return null;
           }
+
 
           @Override
           protected void onPostExecute(Void result) {
@@ -267,4 +302,104 @@ public class BluetoothTexting extends Activity {
       }
     }
   }
+
+  // 鐩戞祴鏈湴钃濈墮鐘舵�
+  BroadcastReceiver bluetoothState = new BroadcastReceiver() {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String prevStateExtra = BluetoothAdapter.EXTRA_PREVIOUS_STATE;
+      String stateExtra = BluetoothAdapter.EXTRA_STATE;
+      int state = intent.getIntExtra(stateExtra, -1);
+      int previousState = intent.getIntExtra(prevStateExtra, -1);
+      String tt = "";
+      switch (state) {
+      case (BluetoothAdapter.STATE_TURNING_ON): {
+        tt = "Bluetooth turning on";
+        break;
+      }
+      case (BluetoothAdapter.STATE_ON): {
+        tt = "Bluetooth on";
+        unregisterReceiver(this);
+        break;
+      }
+      case (BluetoothAdapter.STATE_TURNING_OFF): {
+        tt = "Bluetooth turning off";
+        break;
+      }
+      case (BluetoothAdapter.STATE_OFF): {
+        tt = "Bluetooth off";
+        break;
+      }
+      default:
+        break;
+      }
+      Toast.makeText(context, tt, Toast.LENGTH_LONG).show();
+    }
+  };
+
+  String dStarted = BluetoothAdapter.ACTION_DISCOVERY_STARTED;
+  String dFinished = BluetoothAdapter.ACTION_DISCOVERY_FINISHED;
+
+  BroadcastReceiver discoveryMonitor = new BroadcastReceiver() {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (dStarted.equals(intent.getAction())) {
+        // Discoveryhasstarted.
+        Toast.makeText(getApplicationContext(), "Discovery Started ... ",
+            Toast.LENGTH_SHORT).show();
+      } else if (dFinished.equals(intent.getAction())) {
+        // Discoveryhascompleted.
+        Toast.makeText(getApplicationContext(), "Discovery Completed ... ",
+            Toast.LENGTH_SHORT).show();
+      }
+    }
+  };
+
+  // registerReceiver(discoveryMonitor,new IntentFilter(dStarted));
+  // registerReceiver(discoveryMonitor,new IntentFilter(dFinished));
+
+  BroadcastReceiver discoveryResult2 = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String remoteDeviceName = intent
+          .getStringExtra(BluetoothDevice.EXTRA_NAME);
+
+      BluetoothDevice remoteDevice;
+      remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+      remoteDeviceAddress = remoteDevice.getAddress();
+      Toast.makeText(getApplicationContext(), "Discovered:" + remoteDeviceName,
+          Toast.LENGTH_SHORT).show();
+      // TODODosomethingwiththeremoteBluetoothDevice.
+
+      //娉ㄦ剰浠ヤ笅浠ｇ爜涓嶈兘鏂瑰湪configblue涓嬫寜椤哄簭鎵ц锛宺emoteDeviceAddress杩樻病鍙栧緱鍊�      //閰嶅
+      demo_remoteDevice = bluetooth.getRemoteDevice(remoteDeviceAddress);//"01:23:77:35:2F:AA");
+      bondedDevices = bluetooth.getBondedDevices();
+      //
+      registerReceiver(discoveryPairResult,
+          new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+    }
+  };
+  // registerReceiver(discoveryResult,
+  // newIntentFilter(BluetoothDevice.ACTION_FOUND));
+  // if(!bluetooth.isDiscovering())
+  // bluetooth.startDiscovery();
+
+  BroadcastReceiver discoveryPairResult = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      BluetoothDevice remoteDevice = intent
+          .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+      if (remoteDevice.equals(remoteDevice) && (bondedDevices.contains(remoteDevice))) {
+        // TODO
+        //Target device is paired and discoverable
+
+        Toast.makeText(getApplicationContext(), "閰嶅:" + remoteDevice.getName(),
+            Toast.LENGTH_SHORT).show();
+
+      }
+    };
+  };
 }
