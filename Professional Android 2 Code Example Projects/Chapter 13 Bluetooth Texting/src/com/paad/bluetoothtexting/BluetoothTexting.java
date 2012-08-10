@@ -47,7 +47,7 @@ public class BluetoothTexting extends Activity {
   private UUID uuid = UUID.fromString("a60f35f0-b93a-11de-8a39-08002009c666");
 
   //
-  //閰嶅
+  //配对
   BluetoothDevice demo_remoteDevice;
   Set<BluetoothDevice> bondedDevices;
   String remoteDeviceAddress = "";//demo
@@ -77,7 +77,7 @@ public class BluetoothTexting extends Activity {
       toastText = bluetooth.getName() + " : " + bluetooth.getAddress();
     } else {
       toastText = "No bluetooth";
-      // 鐩戞祴鐘舵�
+      // 监测状态
       String actionStateChanged = BluetoothAdapter.ACTION_STATE_CHANGED;
       String actionRequestEnable = BluetoothAdapter.ACTION_REQUEST_ENABLE;
       registerReceiver(bluetoothState, new IntentFilter(actionStateChanged));
@@ -86,10 +86,11 @@ public class BluetoothTexting extends Activity {
 
     Toast.makeText(this, toastText, Toast.LENGTH_LONG).show();
 
-    // 鎼滅储钃濈墮鐨勭瓑寰呰繃绋�    registerReceiver(discoveryMonitor, new IntentFilter(dStarted));
+    // 搜索蓝牙的等待过程
+    registerReceiver(discoveryMonitor, new IntentFilter(dStarted));
     registerReceiver(discoveryMonitor, new IntentFilter(dFinished));
 
-    // 鎼滅储钃濈墮鍚庣殑缁撴灉
+    // 搜索蓝牙后的结果
     registerReceiver(discoveryResult2, new IntentFilter(
         BluetoothDevice.ACTION_FOUND));
     if (!bluetooth.isDiscovering())
@@ -148,11 +149,7 @@ public class BluetoothTexting extends Activity {
     aa = new ArrayAdapter<BluetoothDevice>(this,
         android.R.layout.simple_list_item_1, foundDevices);
     list = (ListView) findViewById(R.id.list_discovered);
-    try {
-      list.setAdapter(aa);
-    } catch (Exception e) {
-      Log.e("", e.getMessage());
-    }
+    list.setAdapter(aa);
 
     list.setOnItemClickListener(new OnItemClickListener() {
       public void onItemClick(AdapterView<?> arg0, View view, int index,
@@ -172,7 +169,6 @@ public class BluetoothTexting extends Activity {
             }
             return null;
           }
-
 
           @Override
           protected void onPostExecute(Void result) {
@@ -303,7 +299,7 @@ public class BluetoothTexting extends Activity {
     }
   }
 
-  // 鐩戞祴鏈湴钃濈墮鐘舵�
+  // 监测本地蓝牙状态
   BroadcastReceiver bluetoothState = new BroadcastReceiver() {
 
     @Override
@@ -373,7 +369,8 @@ public class BluetoothTexting extends Activity {
           Toast.LENGTH_SHORT).show();
       // TODODosomethingwiththeremoteBluetoothDevice.
 
-      //娉ㄦ剰浠ヤ笅浠ｇ爜涓嶈兘鏂瑰湪configblue涓嬫寜椤哄簭鎵ц锛宺emoteDeviceAddress杩樻病鍙栧緱鍊�      //閰嶅
+      //注意以下代码不能方在configblue下按顺序执行，remoteDeviceAddress还没取得值
+      //配对
       demo_remoteDevice = bluetooth.getRemoteDevice(remoteDeviceAddress);//"01:23:77:35:2F:AA");
       bondedDevices = bluetooth.getBondedDevices();
       //
@@ -396,7 +393,7 @@ public class BluetoothTexting extends Activity {
         // TODO
         //Target device is paired and discoverable
 
-        Toast.makeText(getApplicationContext(), "閰嶅:" + remoteDevice.getName(),
+        Toast.makeText(getApplicationContext(), "配对:" + remoteDevice.getName(),
             Toast.LENGTH_SHORT).show();
 
       }
